@@ -1,6 +1,6 @@
 {
-  "name": "codescape-core",
-  "version": "1.0.0",
+  "name": "@codescape/core",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,12 +8,16 @@
   "directories": {
     "test": "tests"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
     "lint": "eslint src tests --ext .ts",
     "lint:fix": "eslint src tests --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "publish:private": "npm publish"
   },
   "repository": {
     "type": "git",
@@ -26,6 +30,9 @@
     "url": "https://github.com/marvey11/codescape-core/issues"
   },
   "homepage": "https://github.com/marvey11/codescape-core#readme",
+  "publishConfig": {
+    "registry": "http://localhost:4873/"
+  },
   "devDependencies": {
     "@types/crc": "^3.8.3",
     "@types/node": "^24.10.1",
