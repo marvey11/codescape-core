@@ -11,3 +11,10 @@ export {
   isValidISODateString,
   normalizeDate,
 } from "./dateutils.js";
+export { sortDataArray } from "./data-sorting.js";
+export { areEffectivelyEqual, isEffectivelyZero } from "./math-utils.js";
+export {
+  parseLocaleNumber,
+  parseNumberWithAutoLocale,
+  roundCurrency,
+} from "./numberutils.js";

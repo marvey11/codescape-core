@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/marvey11/codescape-core#readme",
   "devDependencies": {
+    "@types/crc": "^3.8.3",
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
@@ -37,5 +38,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.13"
+  },
+  "dependencies": {
+    "crc": "^4.3.2"
   }
 }
