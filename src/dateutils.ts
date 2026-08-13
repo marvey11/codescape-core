@@ -82,12 +82,10 @@ const isValidISODateString = (dateString: string): boolean => {
  */
 const isValidFormattedString = (formattedDate: string): boolean => {
   // A -- check whether the string follows the supported schemas
-  if (
-    !(
-      /^\d{2}\.\d{2}\.\d{4}$/.test(formattedDate) ||
-      /^\d{2}\/\d{2}\/\d{4}$/.test(formattedDate)
-    )
-  ) {
+  if (!(
+    /^\d{2}\.\d{2}\.\d{4}$/.test(formattedDate) ||
+    /^\d{2}\/\d{2}\/\d{4}$/.test(formattedDate)
+  )) {
     return false;
   }
 
