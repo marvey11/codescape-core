@@ -1,38 +1,53 @@
 {
-  "name": "@codescape/core",
+  "name": "@marvey11/codescape-core",
   "version": "0.1.0",
-  "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "directories": {
-    "test": "tests"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "lint": "eslint src tests --ext .ts",
-    "lint:fix": "eslint src tests --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "publish:private": "npm publish"
-  },
+  "description": "Shared non-UI TypeScript utilities for Codescape projects",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marvey11/codescape-core.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/marvey11/codescape-core/issues"
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
-  "homepage": "https://github.com/marvey11/codescape-core#readme",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" AGENTS.md README.md eslint.config.js package.json .prettierrc \"tsconfig*.json\" vite.config.ts \".github/**/*.yml\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" AGENTS.md README.md eslint.config.js package.json .prettierrc \"tsconfig*.json\" vite.config.ts \".github/**/*.yml\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,cjs,mjs,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
   "publishConfig": {
-    "registry": "http://localhost:4873/"
+    "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -42,11 +57,12 @@
     "@vitest/coverage-v8": "^5.1.0",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.7",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.7",
     "vitest": "^5.1.0"
-  },
-  "dependencies": {}
+  }
 }

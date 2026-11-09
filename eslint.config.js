@@ -1,31 +1,29 @@
-import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import prettier from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
+import js from "@eslint/js";
+import prettier from "eslint-config-prettier";
+import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 
 export default [
   {
-    ignores: ['node_modules', 'dist'],
+    ignores: ["coverage/**", "dist/**", "node_modules/**"],
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.ts', 'tests/**/*.ts'],
+    files: ["**/*.ts"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'module',
-        project: './tsconfig.json',
+        ecmaVersion: 2022,
+        sourceType: "module",
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin,
-      prettier: prettierPlugin,
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      'prettier/prettier': 'error',
     },
   },
   prettier,
