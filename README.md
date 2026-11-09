@@ -1,8 +1,8 @@
-# @marvey11/codescape-core
+# codescape-core
 
 Shared non-UI TypeScript utilities for Codescape projects. The package is
 published as an ES module with TypeScript declarations; React components belong
-in `codescape-ui`, while React hooks belong in `codescape-react-utils`.
+in [codescape-ui](https://github.com/marvey11/codescape-ui), while React hooks belong in [codescape-react-utils](https://github.com/marvey11/codescape-react-utils).
 
 ## Utilities
 
