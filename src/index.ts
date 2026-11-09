@@ -1,4 +1,5 @@
-export { CompareFunction, SortedList } from "./SortedList.js";
+export { SortedList } from "./SortedList.js";
+export type { CompareFunction } from "./SortedList.js";
 export {
   formatCurrency,
   formatNormalizedDate,
