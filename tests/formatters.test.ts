@@ -16,6 +16,10 @@ describe("Test Suite for formatters", () => {
     it("should format correctly when specifying a locale", () => {
       expect(formatCurrency(1234.56, "de-DE")).toStrictEqual("1.234,56\u00A0€");
     });
+
+    it("should allow the currency to be overridden", () => {
+      expect(formatCurrency(1234.56, "en-GB", "GBP")).toBe("£1,234.56");
+    });
   });
 
   describe("Test Suite for formatPercent", () => {

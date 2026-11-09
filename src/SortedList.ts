@@ -61,16 +61,16 @@ class SortedList<T> {
    * @returns True if the item was added (not a duplicate), false otherwise.
    */
   add(item: T): boolean {
+    let identifier: string | undefined;
     if (
       typeof this.uniqueIdentifierFn === "function" &&
       this.currentIdentifiers
     ) {
       // The check for `typeof this.uniqueIdentifierFn === "function"` ensures it's not undefined.
-      const identifier = this.uniqueIdentifierFn(item);
+      identifier = this.uniqueIdentifierFn(item);
       if (this.currentIdentifiers.has(identifier)) {
         return false;
       }
-      this.currentIdentifiers.add(identifier);
     }
 
     let low = 0;
@@ -92,6 +92,9 @@ class SortedList<T> {
     }
 
     this.items.splice(insertIndex, 0, item);
+    if (identifier !== undefined) {
+      this.currentIdentifiers?.add(identifier);
+    }
 
     return true;
   }
@@ -156,7 +159,7 @@ class SortedList<T> {
   remove(item: T): boolean {
     const index = this.indexOf(item);
     if (index !== -1) {
-      this.items.splice(index, 1);
+      this.removeAt(index);
       return true;
     }
     return false;
@@ -172,14 +175,19 @@ class SortedList<T> {
     if (index < 0 || index >= this.items.length) {
       return undefined;
     }
-    return this.items.splice(index, 1)[0];
+    const [removedItem] = this.items.splice(index, 1);
+    if (this.uniqueIdentifierFn) {
+      this.currentIdentifiers?.delete(this.uniqueIdentifierFn(removedItem));
+    }
+    return removedItem;
   }
 
   /**
-   * Removes all items from the list.
+   * Removes all items and resets duplicate tracking.
    */
   clear(): void {
     this.items.length = 0;
+    this.currentIdentifiers?.clear();
   }
 
   /**

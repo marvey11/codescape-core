@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseLocaleNumber, parseNumberWithAutoLocale } from "../src/index.js";
+import {
+  parseLocaleNumber,
+  parseNumberWithAutoLocale,
+  roundCurrency,
+} from "../src/index.js";
 
 describe("Test Suite for numberutils", () => {
   describe("Test Suite for parseNumberWithAutoLocale", () => {
@@ -51,6 +55,30 @@ describe("Test Suite for numberutils", () => {
       expect(parseLocaleNumber("-1,234.56", "en-GB")).toStrictEqual(-1234.56);
 
       expect(parseLocaleNumber("invalid", "de-DE")).toBeNaN();
+    });
+
+    it("should reject malformed grouping and decimal separators", () => {
+      expect(parseLocaleNumber("12,34.56", "en-GB")).toBeNaN();
+      expect(parseLocaleNumber("1,23,4", "en-GB")).toBeNaN();
+      expect(parseLocaleNumber("1.234.56", "en-GB")).toBeNaN();
+      expect(parseLocaleNumber("123.", "en-GB")).toBeNaN();
+      expect(parseLocaleNumber(".5", "en-GB")).toBeNaN();
+      expect(parseLocaleNumber("", "en-GB")).toBeNaN();
+      expect(parseLocaleNumber("9".repeat(400), "en-GB")).toBeNaN();
+    });
+
+    it("should support signs, whitespace, and locale-specific grouping sizes", () => {
+      expect(parseLocaleNumber(" -1,234.50 ", "en-GB")).toBe(-1234.5);
+      expect(parseLocaleNumber("+42", "en-GB")).toBe(42);
+      expect(parseLocaleNumber("12,34,567.89", "en-IN")).toBe(1234567.89);
+    });
+  });
+
+  describe("Test Suite for roundCurrency", () => {
+    it("should round to two decimal places", () => {
+      expect(roundCurrency(12.345)).toBe(12.35);
+      expect(roundCurrency(12.344)).toBe(12.34);
+      expect(roundCurrency(-12.345)).toBe(-12.34);
     });
   });
 });

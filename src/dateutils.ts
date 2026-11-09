@@ -1,17 +1,17 @@
+/**
+ * Returns a new date for the same UTC calendar day, at midnight UTC.
+ */
 const normalizeDate = (date: Date): Date => {
-  return new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      0,
-      0,
-      0,
-      0,
-    ),
+  return createDateFromComps(
+    date.getUTCFullYear(),
+    date.getUTCMonth() + 1,
+    date.getUTCDate(),
   );
 };
 
+/**
+ * Compares two dates by their UTC calendar day.
+ */
 const compareNormalizedDates = (date1: Date, date2: Date): number => {
   const norm1 = normalizeDate(date1).getTime();
   const norm2 = normalizeDate(date2).getTime();
@@ -25,6 +25,11 @@ const compareNormalizedDates = (date1: Date, date2: Date): number => {
   return 0;
 };
 
+/**
+ * Parses a supported date string or accepts a Date and normalizes it to
+ * midnight UTC. Strings may be ISO (`YYYY-MM-DD`), `DD.MM.YYYY`, or
+ * `DD/MM/YYYY`; invalid strings throw an Error.
+ */
 const getDateObject = (dateOrString: string | Date): Date => {
   let date: Date;
 
@@ -100,8 +105,16 @@ const createDateFromFormatted = (formattedDate: string): Date => {
   return createDateFromComps(year, month, day);
 };
 
-const createDateFromComps = (year: number, month: number, day: number) =>
-  new Date(Date.UTC(year, month - 1, day));
+const createDateFromComps = (
+  year: number,
+  month: number,
+  day: number,
+): Date => {
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
+};
 
 const getCompsFromFormatted = (formattedDate: string) =>
   formattedDate.split(/[\\.\\/]/).map(Number) as [number, number, number];
@@ -124,11 +137,19 @@ const isValidDateComponents = (
     return false;
   }
 
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
+    return false;
+  }
+
   const date = createDateFromComps(year, month, day);
   return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
   );
 };
 

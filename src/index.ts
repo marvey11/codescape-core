@@ -5,6 +5,7 @@ export {
   formatPercent,
 } from "./formatters.js";
 export {
+  compareNormalizedDates,
   getDateObject,
   isValidDateComponents,
   isValidFormattedString,

@@ -183,5 +183,58 @@ describe("Test Suite for the SortedList class", () => {
 
       expect(noDuplicates.size).toStrictEqual(2);
     });
+
+    it("should allow an identifier to be reused after removal or clearing", () => {
+      const noDuplicates = new SortedList<Event>(compareEventsByDate, (item) =>
+        formatNormalizedDate(item.date),
+      );
+      const firstEvent = {
+        name: "Meeting",
+        date: new Date("2023-10-26"),
+      };
+
+      expect(noDuplicates.add(firstEvent)).toBe(true);
+      expect(noDuplicates.add({ ...firstEvent, name: "Duplicate" })).toBe(
+        false,
+      );
+      expect(noDuplicates.remove({ ...firstEvent, name: "Equivalent" })).toBe(
+        true,
+      );
+      expect(noDuplicates.add({ ...firstEvent, name: "Re-added" })).toBe(true);
+      expect(noDuplicates.removeAt(0)).toEqual({
+        ...firstEvent,
+        name: "Re-added",
+      });
+      noDuplicates.clear();
+      expect(noDuplicates.add({ ...firstEvent, name: "After clear" })).toBe(
+        true,
+      );
+    });
+
+    it("should not reserve an identifier when comparison fails", () => {
+      let shouldThrow = true;
+      const flakyList = new SortedList<Event>(
+        (a, b) => {
+          if (a.name === "Flaky" && shouldThrow) {
+            shouldThrow = false;
+            throw new Error("Comparison failed");
+          }
+          return compareEventsByDate(a, b);
+        },
+        (item) => item.name,
+      );
+      const existingEvent = {
+        name: "Existing",
+        date: new Date("2023-10-25"),
+      };
+      const flakyEvent = {
+        name: "Flaky",
+        date: new Date("2023-10-26"),
+      };
+      flakyList.add(existingEvent);
+
+      expect(() => flakyList.add(flakyEvent)).toThrow("Comparison failed");
+      expect(flakyList.add(flakyEvent)).toBe(true);
+    });
   });
 });

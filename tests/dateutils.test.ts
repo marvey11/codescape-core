@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  compareNormalizedDates,
   formatNormalizedDate,
   getDateObject,
   isValidDateComponents,
@@ -14,6 +15,36 @@ describe("Test suite for dateutils", () => {
       expect(normalizeDate(new Date("2025-07-13")).toISOString()).toStrictEqual(
         "2025-07-13T00:00:00.000Z",
       );
+    });
+
+    describe("Test suite for compareNormalizedDates", () => {
+      it("should compare UTC calendar days and ignore time", () => {
+        expect(
+          compareNormalizedDates(
+            new Date("2025-07-13T01:00:00Z"),
+            new Date("2025-07-13T23:00:00Z"),
+          ),
+        ).toBe(0);
+        expect(
+          compareNormalizedDates(
+            new Date("2025-07-12T23:00:00Z"),
+            new Date("2025-07-13T01:00:00Z"),
+          ),
+        ).toBe(-1);
+        expect(
+          compareNormalizedDates(
+            new Date("2025-07-14T01:00:00Z"),
+            new Date("2025-07-13T23:00:00Z"),
+          ),
+        ).toBe(1);
+      });
+    });
+
+    it("should preserve UTC calendar days for years below 100", () => {
+      expect(
+        normalizeDate(new Date("0099-07-13T12:30:00Z")).toISOString(),
+      ).toBe("0099-07-13T00:00:00.000Z");
+      expect(isValidDateComponents(99, 7, 13)).toBe(true);
     });
   });
 
@@ -115,6 +146,8 @@ describe("Test suite for dateutils", () => {
       expect(isValidDateComponents(undefined, 7, 13)).toStrictEqual(false);
       expect(isValidDateComponents(2025, undefined, 13)).toStrictEqual(false);
       expect(isValidDateComponents(2025, 7, undefined)).toStrictEqual(false);
+      expect(isValidDateComponents(2025.5, 7, 13)).toStrictEqual(false);
+      expect(isValidDateComponents(2025, 2, 29)).toStrictEqual(false);
     });
   });
 
