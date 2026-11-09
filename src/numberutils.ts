@@ -1,103 +1,123 @@
 /**
- * Parses a number string by first attempting to detect its locale (English or German).
+ * Parses a number string using a heuristic for English-like and German-like
+ * separators. Ambiguous single-separator values follow the heuristic; use
+ * `parseLocaleNumber` with an explicit locale when certainty is required.
  *
  * @param numberString The number string to parse.
- * @returns The parsed number, or NaN if parsing fails.
+ * @returns The parsed number, or `NaN` if parsing fails.
  */
 const parseNumberWithAutoLocale = (numberString: string): number =>
   parseLocaleNumber(numberString, detectNumberLocale(numberString));
 
 /**
- * Parses a locale-formatted number string into a standard JavaScript number.
- * Assumes the string strictly follows the number formatting rules of the specified locale.
+ * Parses an ASCII-digit number string using locale-specific separators and
+ * grouping rules.
+ * Grouping and decimal separators must follow the locale; malformed input
+ * returns `NaN`.
  *
- * (Provided by Gemini, with minor modifications)
- *
- * @param numberString The number string to parse (e.g., "1.234,56" for 'de-DE', "1,234.56" for 'en-GB').
- * @param locale The locale string (e.g., 'en-GB', 'de-DE').
+ * @param numberString The number string to parse (for example, "1.234,56" for
+ * `de-DE` or "1,234.56" for `en-GB`).
+ * @param locale The locale used to determine separators and grouping rules.
  * @returns The parsed number, or `NaN` if parsing fails.
  */
 const parseLocaleNumber = (numberString: string, locale: string): number => {
-  // 1. Get a formatter for the target locale to inspect its separators
   const formatter = new Intl.NumberFormat(locale);
-  const parts = formatter.formatToParts(12345.67); // Use a reference number to get parts
+  const parts = formatter.formatToParts(123456789012345.6);
+  const decimalSeparator = parts.find((part) => part.type === "decimal")?.value;
+  const groupSeparator = parts.find((part) => part.type === "group")?.value;
+  const minusSign =
+    new Intl.NumberFormat(locale, { useGrouping: false })
+      .formatToParts(-1)
+      .find((part) => part.type === "minusSign")?.value ?? "-";
 
-  let decimalSeparator = "."; // Default to standard dot
-  let thousandsSeparator = ""; // Default to no thousands separator
-
-  for (const part of parts) {
-    if (part.type === "decimal") {
-      decimalSeparator = part.value;
-    } else if (part.type === "group") {
-      // 'group' refers to thousands separator
-      thousandsSeparator = part.value;
-    }
+  let value = numberString.trim();
+  let sign = "";
+  if (value.startsWith(minusSign) || value.startsWith("-")) {
+    sign = "-";
+    value = value.slice(value.startsWith(minusSign) ? minusSign.length : 1);
+  } else if (value.startsWith("+")) {
+    value = value.slice(1);
   }
 
-  // 2. Remove thousands separators
-  // Escape the thousandsSeparator for regex if it's a special character (e.g., '.')
-  const escapedThousandsSeparator = thousandsSeparator.replace(
-    /[.*+?^${}()|[\]\\]/g,
-    "\\$&",
-  );
-  const cleanedString = numberString.replace(
-    new RegExp(escapedThousandsSeparator, "g"),
-    "",
-  );
+  const decimalParts = decimalSeparator
+    ? value.split(decimalSeparator)
+    : [value];
+  if (decimalParts.length > 2) {
+    return Number.NaN;
+  }
 
-  // 3. Replace the decimal separator with a standard dot
-  const finalString = cleanedString.replace(decimalSeparator, ".");
+  const [integerPart, fractionPart] = decimalParts;
+  if (
+    !integerPart ||
+    (fractionPart !== undefined && !/^\d+$/.test(fractionPart))
+  ) {
+    return Number.NaN;
+  }
 
-  // 4. Parse the cleaned string
-  return Number(finalString);
+  let integerDigits = integerPart;
+  if (groupSeparator && integerPart.includes(groupSeparator)) {
+    const groups = integerPart.split(groupSeparator);
+    const integerParts = parts
+      .filter((part) => part.type === "integer")
+      .map((part) => part.value.length);
+    const primaryGroupSize = integerParts[integerParts.length - 1];
+    const secondaryGroupSize =
+      integerParts[integerParts.length - 2] ?? primaryGroupSize;
+
+    if (
+      !primaryGroupSize ||
+      !secondaryGroupSize ||
+      groups[0] === undefined ||
+      groups[0].length < 1 ||
+      groups[0].length > secondaryGroupSize ||
+      groups
+        .slice(1, -1)
+        .some((group) => group.length !== secondaryGroupSize) ||
+      groups[groups.length - 1]?.length !== primaryGroupSize ||
+      groups.some((group) => !/^\d+$/.test(group))
+    ) {
+      return Number.NaN;
+    }
+
+    integerDigits = groups.join("");
+  } else if (!/^\d+$/.test(integerPart)) {
+    return Number.NaN;
+  }
+
+  const parsedValue = Number(
+    `${sign}${integerDigits}${fractionPart === undefined ? "" : `.${fractionPart}`}`,
+  );
+  return Number.isFinite(parsedValue) ? parsedValue : Number.NaN;
 };
 
 /**
- * Attempts to detect the most likely locale (English or German) for a given
- * number string based on the usage of comma and dot as separators.
- * This is a heuristic and may not be 100% accurate for all number formats or locales.
- *
- * (Provided by Gemini, with minor modifications)
- *
- * @param numberString The number string to analyze.
- * @returns 'en-GB' for English-like, 'de-DE' for German-like, or a default if ambiguous.
+ * Detects English-like or German-like punctuation. Single-separator values can
+ * be ambiguous; use `parseLocaleNumber` for an explicit locale.
  */
 function detectNumberLocale(numberString: string): "en-GB" | "de-DE" {
   const hasComma = numberString.includes(",");
   const hasDot = numberString.includes(".");
 
   if (!hasComma && !hasDot) {
-    // No separators: e.g., "123". Ambiguous, default to English.
     return "en-GB";
   }
 
   if (hasComma && !hasDot) {
-    // Only comma: e.g., "123,45" (German decimal) or "1,234" (English thousands).
-    // If it's a thousands separator, it's usually followed by more numbers,
-    // but if it's the *only* separator, it's very likely a German decimal.
-    // We'll lean towards German here for precision.
     return "de-DE";
   }
 
   if (!hasComma && hasDot) {
-    // Only dot: e.g., "123.45" (English decimal) or "1.234" (German thousands).
-    // Similar to above, if it's the *only* separator, it's very likely English decimal.
     return "en-GB";
   }
 
-  // Both comma and dot exist. This is where the primary distinction lies.
-  const lastCommaIndex = numberString.lastIndexOf(",");
-  const lastDotIndex = numberString.lastIndexOf(".");
-
-  if (lastCommaIndex > lastDotIndex) {
-    // Example: "1.234,56" - comma is the last separator -> German decimal
-    return "de-DE";
-  } else {
-    // Example: "1,234.56" - dot is the last separator -> English decimal
-    return "en-GB";
-  }
+  return numberString.lastIndexOf(",") > numberString.lastIndexOf(".")
+    ? "de-DE"
+    : "en-GB";
 }
 
+/**
+ * Rounds a value to two decimal places using `Math.round`.
+ */
 const roundCurrency = (value: number): number => Math.round(value * 100) / 100;
 
 export { parseLocaleNumber, parseNumberWithAutoLocale, roundCurrency };

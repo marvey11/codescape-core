@@ -1,16 +1,20 @@
-const currencyFormatOptions: Intl.NumberFormatOptions = {
-  style: "currency",
-  currency: "EUR",
-};
+/**
+ * Formats a number as currency, defaulting to EUR and the `en-GB` locale.
+ *
+ * @param value The amount to format.
+ * @param locale The formatting locale.
+ * @param currency The ISO 4217 currency code.
+ */
+const formatCurrency = (
+  value: number,
+  locale = "en-GB",
+  currency = "EUR",
+): string =>
+  Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
 
 /**
- * Formats a number as currency.
- *
- * If no locale is specified, uses "en-GB" to use the decimal point as the default.
+ * Formats a decimal value as a percentage using the requested fraction digits.
  */
-const formatCurrency = (value: number, locale = "en-GB"): string =>
-  Intl.NumberFormat(locale, currencyFormatOptions).format(value);
-
 const formatPercent = (
   value: number,
   fractionDigits = 2,
@@ -30,9 +34,8 @@ const normalizedDateFormatOptions: Intl.DateTimeFormatOptions = {
 };
 
 /**
- * Formats a normalised date (i.e., time set to midnight UTC).
- *
- * If no locale is given, format representation is returned in short ISO format "YYYY-MM-DD".
+ * Formats a date, which should represent a normalized UTC calendar day.
+ * Without a locale, returns `YYYY-MM-DD`.
  */
 const formatNormalizedDate = (
   date: Date,

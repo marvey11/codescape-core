@@ -94,6 +94,28 @@ describe("Test Suite for sortDataArray", () => {
     sortedDates.slice(3).forEach((date) => expect(date == null).toBeTruthy());
   });
 
+  it("should reject incompatible, unsupported, or invalid values", () => {
+    expect(() =>
+      sortDataArray([{ value: 1 }, { value: "2" }], (item) => item.value),
+    ).toThrow(TypeError);
+    expect(() => sortDataArray([{ value: true }], "value")).toThrow(TypeError);
+    expect(() => sortDataArray([{ value: Number.NaN }], "value")).toThrow(
+      TypeError,
+    );
+    expect(() =>
+      sortDataArray([{ value: new Date(Number.NaN) }], "value"),
+    ).toThrow(TypeError);
+  });
+
+  it("should return a sorted copy without mutating the input", () => {
+    const input = [{ value: 2 }, { value: 1 }];
+    const sorted = sortDataArray(input, "value");
+
+    expect(sorted).toEqual([{ value: 1 }, { value: 2 }]);
+    expect(input).toEqual([{ value: 2 }, { value: 1 }]);
+    expect(sorted).not.toBe(input);
+  });
+
   describe("when sorting by a nested property using an extractor function", () => {
     interface NestedItem {
       id: number;
